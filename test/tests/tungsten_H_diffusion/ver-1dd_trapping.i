@@ -3,19 +3,19 @@
 # No Soret effect or solubility included.
 
 # modeling parameters
-nx_num = 5000 # (-)
+nx_num = 50000 # (-)
 diffusivity = '${units 1.632 mm^2/s}' # ----- 1.632 mm^2/min (H2 in W)-- input as mm^2/s
-simulation_time = '${units 0.0005 s}' # actually min
-interval_time_min = '${units 0.000001 s}' # actually min # 0.00000001 s needed for mass balance
-interval_time = '${units 0.000001 s}' # actually min
+simulation_time = '${units 3 s}' # actually min
+interval_time_min = '${units 0.00000001 s}' # actually min # 0.00000001 s needed for mass balance
+interval_time = '${units 0.00000001 s}' # actually min
 thickness = '${units 0.025 mm}'
 temperature = '${units 1500 K}' # Trapping has limited effect at 1500 K
 
 # Trapping parameters
 cl = '${units 3.1622e18 at/m^3 -> at/mm^3}'
-N = '${units 3.1622e22 at/m^3 -> at/mm^3}'
-trapping_prefactor = '${fparse ${units 1e15 1/s} / time_scaling}' # assumed from TMAP8 documentation. No alternative rate in literature
-release_prefactor = '${fparse ${units 1e13 1/s} / time_scaling}' # assumed from TMAP8 documentation. No alternative rate in literature
+density = '${units 3.1622e22 at/m^3 -> at/mm^3}'
+trapping_prefactor = '${fparse ${units 1e15 1/s} * 60}' # min, assumed from TMAP8 documentation. No alternative rate in literature
+release_prefactor = '${fparse ${units 1e13 1/s} * 60}' # min, assumed from TMAP8 documentation. No alternative rate in literature
 epsilon = ${units 9864 K} # epsilon/k, (trapping energy)/(Boltzman constant) = 0.85 eV / 8.61733326e-5 eV/K = 9980 K
 trapping_fraction = 0.01 # fraction of surface sites that are trapping sites
 trap_per_free = 1e3 # C_T multiplier for numerical purposes
@@ -55,7 +55,7 @@ trap_per_free = 1e3 # C_T multiplier for numerical purposes
   [empty_sites]
     variable = empty_sites
     type = EmptySitesAux
-    N = '${fparse N / cl}'
+    N = '${fparse density / cl}'
     Ct0 = ${trapping_fraction}
     trap_per_free = ${trap_per_free}
     trapped_concentration_variables = trapped
@@ -110,7 +110,7 @@ trap_per_free = 1e3 # C_T multiplier for numerical purposes
     type = TrappingNodalKernel
     variable = trapped
     alpha_t = ${trapping_prefactor}
-    N = '${fparse N / cl}'
+    N = '${fparse density / cl}'
     Ct0 = ${trapping_fraction}
     mobile_concentration = 'mobile'
     temperature = ${temperature}
@@ -143,7 +143,7 @@ trap_per_free = 1e3 # C_T multiplier for numerical purposes
 [Functions]
   [BC_func]
     type = ParsedFunction
-    expression = '${fparse cl / cl}*tanh( 3 * t )'
+    expression = '${fparse cl / cl} * tanh(3 * t)'
   []
 []
 
@@ -212,14 +212,15 @@ trap_per_free = 1e3 # C_T multiplier for numerical purposes
   end_time = ${simulation_time}
   dt = ${interval_time}
   dtmin = ${interval_time_min}
+  dtmax = 5
   solve_type = NEWTON
   scheme = BDF2
-  nl_abs_tol = 1e-13
+  # nl_abs_tol = 1e-13
   petsc_options_iname = '-pc_type'
   petsc_options_value = 'lu'
-  #automatic_scaling = true
-  #verbose = true
-  #compute_scaling_once = false
+  # automatic_scaling = true
+  # verbose = true
+  # compute_scaling_once = false
   line_search = 'none'
   [TimeStepper]
     type = IterationAdaptiveDT
