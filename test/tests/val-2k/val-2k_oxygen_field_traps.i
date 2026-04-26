@@ -1,5 +1,5 @@
-# This input file defines the six scaled trap model used by the 5 nm oxygen-
-# field oxide case in val-2k. The trap densities are multiplied by a sharp tanh
+# This input file defines the six scaled trap model used by the oxygen-field
+# val-2k cases. The trap densities are multiplied by a sharp tanh
 # profile that suppresses trapping inside the front oxide region while
 # preserving the original tungsten distributions in the substrate.
 

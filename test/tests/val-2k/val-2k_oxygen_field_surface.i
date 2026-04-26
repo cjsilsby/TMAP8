@@ -1,5 +1,5 @@
-# This input file defines the surface release assumptions for the 5 nm oxygen-
-# field oxide case in val-2k. It applies phenomenological D2 release on both
+# This input file defines the surface release assumptions for the oxygen-field
+# val-2k cases. It applies phenomenological D2 release on both
 # free surfaces and ties the D2O release channel to the evolving oxygen field.
 
 [BCs]

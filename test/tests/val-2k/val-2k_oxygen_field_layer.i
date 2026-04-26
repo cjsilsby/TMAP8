@@ -1,8 +1,8 @@
 # This input file defines the smooth oxygen-field representation used for the
-# 5 nm oxide case in val-2k. The oxygen inventory is initialized with a sharp
+# val-2k oxygen-field cases. The oxygen inventory is initialized with a sharp
 # tanh profile inside the first 5 nm, then evolves dynamically and gates the
 # D2O release channel while the deuterium transport properties remain the same
-# as the tungsten-only baseline.
+# in both oxygen-field cases.
 
 [Functions]
   [oxide_position_function]
