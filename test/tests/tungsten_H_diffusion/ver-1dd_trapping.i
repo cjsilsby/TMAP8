@@ -3,12 +3,12 @@
 # No Soret effect or solubility included.
 
 # modeling parameters
-nx_num = 50000 # (-)
+nx_num = 5000 # (-)
 diffusivity = '${units 1.632 mm^2/s}' # ----- 1.632 mm^2/min (H2 in W)-- input as mm^2/s
 simulation_time = '${units 3 s}' # actually min
-interval_time_min = '${units 0.00000001 s}' # actually min # 0.00000001 s needed for mass balance
-interval_time = '${units 0.00000001 s}' # actually min
-thickness = '${units 0.025 mm}'
+interval_time_min = '${units 0.01 s}' # actually min # 0.00000001 s needed for mass balance
+interval_time = '${units 0.01 s}' # actually min
+thickness = '${units 0.025 mm}' # 0.025
 temperature = '${units 1500 K}' # Trapping has limited effect at 1500 K
 
 # Trapping parameters
@@ -16,8 +16,8 @@ cl = '${units 3.1622e18 at/m^3 -> at/mm^3}'
 density = '${units 3.1622e22 at/m^3 -> at/mm^3}'
 trapping_prefactor = '${fparse ${units 1e15 1/s} * 60}' # min, assumed from TMAP8 documentation. No alternative rate in literature
 release_prefactor = '${fparse ${units 1e13 1/s} * 60}' # min, assumed from TMAP8 documentation. No alternative rate in literature
-epsilon = ${units 9864 K} # epsilon/k, (trapping energy)/(Boltzman constant) = 0.85 eV / 8.61733326e-5 eV/K = 9980 K
-trapping_fraction = 0.01 # fraction of surface sites that are trapping sites
+epsilon = '${units 9864 K}' # 9864 epsilon/k, (trapping energy)/(Boltzman constant) = 0.85 eV / 8.61733326e-5 eV/K = 9980 K
+trapping_fraction = 0.01 # 0.01 fraction of surface sites that are trapping sites
 trap_per_free = 1e3 # C_T multiplier for numerical purposes
 
 [Mesh]
@@ -162,7 +162,7 @@ trap_per_free = 1e3 # C_T multiplier for numerical purposes
     diffusivity = ${diffusivity}
     # outputs = csv_data
   []
- 
+
   [outflux]
     type = ADSideDiffusiveFluxIntegral
     boundary = right
@@ -197,7 +197,7 @@ trap_per_free = 1e3 # C_T multiplier for numerical purposes
     type = TimeIntegratedPostprocessor
     value = flux_difference
     # outputs = csv_data
-  [] 
+  []
 []
 
 [Preconditioning]
@@ -222,13 +222,14 @@ trap_per_free = 1e3 # C_T multiplier for numerical purposes
   # verbose = true
   # compute_scaling_once = false
   line_search = 'none'
-  [TimeStepper]
-    type = IterationAdaptiveDT
-    dt = 1e-6
-    optimal_iterations = 9
-    growth_factor = 1.1
-    cutback_factor = 0.909
-  []
+  # [TimeStepper]
+  #   type = IterationAdaptiveDT
+  #   #dt = 1e-6
+  #   dt = 1e-12
+  #   optimal_iterations = 9
+  #   growth_factor = 1.1
+  #   cutback_factor = 0.909
+  # []
 []
 
 [Outputs]

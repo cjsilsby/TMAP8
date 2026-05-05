@@ -8,30 +8,27 @@ import os
 script_folder = os.path.dirname(__file__)
 os.chdir(script_folder)
 
-num_summation_terms = 2000
-N_o = 3.1622e13  # (atom/mm^3) For convenience lattice density chosen as 3.1622e22 atom/m^3
-# c_o = 0.0001  # dissolved gas atom fraction (-)
-# D = 1.632  # diffusivity (mm^2/min) ---- 1.632 m^2/min, but input as if s. Corrected before graphing.
-# l = 0.025  # slab thickness (mm) --- 0.025 mm
+num_summation_terms = 50000000
+N_o = 3.1622e22  # (atom/m^3) For convenience lattice density chosen as 3.1622e13 atom/mm^3
 
 ######################################### New Stuff
 
-lambdaa = 3.1622e-8 * 1000  # lattice parameter (mm) || lambda is a python keyword (still TMAP8 default)
-nu = 1e13 * 60  # Debye frequency (1/min)
-rho = 0.01  # trapping site fraction
-D_o = 7.44e-08 * 1000**2 * 60  # diffusivity pre-exponential (mm^2/min)
-Ed = 0.13  # diffusion activation energy (eV)
+lambdaa = 3.1622e-8  # * 1000  # lattice parameter (mm) || lambda is a python keyword (still TMAP8 default)
+nu = 1e13  # * 60  # Debye frequency (1/min)
+rho = 0.1  # trapping site fraction
+D_o = 2.72e-8  # * 1000**2 * 60  # diffusivity pre-exponential (mm^2/min)
+Ed = 0  # diffusion activation energy (eV) # 0.13
 
-k = 8.61733326e-5 # Boltzmann's constant(eV/K)
+k = 1.38064852e-23  # 8.61733326e-05  # Boltzmann's constant(eV/K)
 T = 1500  # temperature (K)
-epsilon_k_ratio = 9864
+epsilon_k_ratio = 100  # 9864
 epsilon = k * epsilon_k_ratio  # epsilon: trap energy
 c = 0.0001  # dissolved gas atom fraction
 zeta = ((lambdaa**2) * nu * np.exp((Ed - epsilon) / (k * T)) / (rho * D_o)) + (c / rho)
 
-D = 1.632  # diffusivity (mm^2/min)
+D = 2.72e-8  # diffusivity (mm^2/min)
 D_eff = D / (1 + (1 / zeta))  # Effective diffusivity (mm^2/min)
-l = 0.025  # slab thickness (mm) --- 0.025 mm
+l = 2.5e-5  # slab thickness (mm) --- 0.025 mm
 c_o = c
 tau_be = l**2 / (2 * (np.pi) ** 2 * D_eff)
 
@@ -44,13 +41,13 @@ tau_be = l**2 / (2 * (np.pi) ** 2 * D_eff)
 # csv_folder = "./ver-1dd_out.csv"
 csv_folder = "./ver-1dd_trapping_out.csv"
 tmap_sol = pd.read_csv(csv_folder)
-tmap_time = np.array(tmap_sol["time"]) # minutes
+tmap_time = np.array(tmap_sol["time"])  # minutes
 tmap_prediction = np.array(tmap_sol["scaled_outflux"])
 In_minus_Out = np.array(tmap_sol["time_integrated_flux"])
 Accumulation = np.array(tmap_sol["mass_in_domain"])
 
 
-idx = np.where(tmap_time >= 0.0001)[0][0]
+idx = np.where(tmap_time >= 0.00000001)[0][0]
 
 # # Calculate the breakthrough time from numerical solution
 # tmap_slope = (tmap_prediction[idx + 1 :] - tmap_prediction[idx:-1]) / (
@@ -77,7 +74,6 @@ def summation_term(num_terms, time):
 
 
 # Calculate the analytical solution
-c_o = c
 analytical_flux = (
     N_o * (c_o * D / l) * (1 + 2 * summation_term(num_summation_terms, analytical_time))
 )
@@ -88,8 +84,8 @@ gs = gridspec.GridSpec(1, 1)
 ax = fig.add_subplot(gs[0])
 
 # Correct time to minutes
-tmap_time = tmap_time * 60
-analytical_time = analytical_time * 60
+tmap_time = tmap_time  # * 60
+analytical_time = analytical_time  # * 60
 
 ax.plot(tmap_time, tmap_prediction, label=r"TMP8", c="tab:gray")  # numerical solution
 ax.plot(
@@ -109,7 +105,7 @@ ax.plot(
 #     linestyle="--",
 # )
 ax.set_xlabel("Time (s)")
-ax.set_ylabel("Flux (atom/mm$^2$s)") # For tungsten in atom/mm^2, or TZM atom/mm^2
+ax.set_ylabel("Flux (atom/mm$^2$s)")  # For tungsten in atom/mm^2, or TZM atom/mm^2
 ax.legend(loc="best")
 # ax.set_xlim(left=0, right=1.5)
 ax.set_ylim(bottom=0)
@@ -131,27 +127,28 @@ RMSPE = RMSE * 100 / np.mean(analytical_flux[idx:])
 # )
 ax.minorticks_on()
 plt.savefig("ver-1dd_comparison_diffusion.png", bbox_inches="tight", dpi=300)
-plt.close(fig)
-
-
-################# Mass Balance Check ##########################
-
-plt.figure(figsize=(6.5,5.5))
-plt.plot(tmap_time, Accumulation, c="k", linestyle="--", label = 'Accumulation')
-plt.plot(tmap_time, In_minus_Out, label = 'In - Out')
-RMSE = np.sqrt(np.mean((Accumulation-In_minus_Out)**2) )
-RMSPE = RMSE*100/np.mean(In_minus_Out)
-# print(f'RMSPE = %.2f '%RMSPE+'%')
-# plt.text(0.01,0.006, 'RMSPE = %.2f '%RMSPE+'%',fontweight='bold')
-plt.xlabel('Time (s)')
-plt.ylabel(r'$\mu$mol H/mm')
-plt.title(f'In - Out = Accumulation')
-plt.xlim(0,tmap_time.max())
-plt.ylim(0)
-plt.legend()
-plt.grid(True)
-plt.tight_layout()
 # plt.show()
-
-plt.savefig("ver-1dd_MassBal.png", bbox_inches="tight", dpi=300)
 plt.close(fig)
+
+
+# ################# Mass Balance Check ##########################
+
+# plt.figure(figsize=(6.5, 5.5))
+# plt.plot(tmap_time, Accumulation, c="k", linestyle="--", label="Accumulation")
+# plt.plot(tmap_time, In_minus_Out, label="In - Out")
+# RMSE = np.sqrt(np.mean((Accumulation - In_minus_Out) ** 2))
+# RMSPE = RMSE * 100 / np.mean(In_minus_Out)
+# # print(f'RMSPE = %.2f '%RMSPE+'%')
+# # plt.text(0.01,0.006, 'RMSPE = %.2f '%RMSPE+'%',fontweight='bold')
+# plt.xlabel("Time (s)")
+# plt.ylabel(r"$\mu$mol H/mm")
+# plt.title(f"In - Out = Accumulation")
+# plt.xlim(0, tmap_time.max())
+# plt.ylim(0)
+# plt.legend()
+# plt.grid(True)
+# plt.tight_layout()
+# # plt.show()
+
+# plt.savefig("ver-1dd_MassBal.png", bbox_inches="tight", dpi=300)
+# plt.close(fig)
