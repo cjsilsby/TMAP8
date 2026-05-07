@@ -3,24 +3,38 @@
 # No Soret effect, trapping, or solubility included.
 
 # Numerical parameters
-nx_num = 1000 # -
-simulation_time = '${units 5000 s}'
+nx_num = 5000 # - 1000
+simulation_time = '${units 3 s}' # Actually min # previous 1
+step = '${units 0.0001 s}' # Actually min # previous 0.000001
 
-# Data used in TMAP4/TMAP7 case
-T_PyC = '${units 33 mum -> m}'
-T_SiC = '${units 66 mum -> m}'
-D_ver = '${units 15.75 mum -> m}'
-D_ver_PyC = '${units 32 mum -> m}'
-Diffusivity_PyC = '${units 1.274e-7 m^2/s}'
-Diffusivity_SiC = '${units 2.622e-11 m^2/s}'
-length_PyC = '${units 33 mum -> m}'
-initial_concentration = '${units 50.7079 mol/m^3}'
+# System properties
+T_Cu = '${units 0.05 mm}' # Thickness of Copper substrate. # T_PyC
+T_W = '${units 0.025 mm}' # Thickness of Tungsten film  # SiC
+D_ver = '${units 0.02 mm}' # Distance past T_Cu to calculate theoretical diffusion in tungsten layer # D_ver
+D_ver_Cu = '${units 0.045 mm}' # Distance past 0 to calculate theoretical diffusion on copper layer # D_ver_PyC
+length_Cu = ${T_Cu} # '${units 1 mm}'
+
+# Initial Conditions
+initial_concentration = '${units 50 mol/m^3 -> mol/mm^3}'
+temperature = '${units 1500 K}'
+
+# Constants
+k_B = '${units 8.61733e-5 eV/K}'
+ideal_R = '${units 8.31446261815324 J/mol/K}'
+
+# Material Propertoes
+Do_Cu = '${units 104.400 mm^2/s}' # Diffusivity of H in Cu (mm^2/min)
+E_D_Cu = '${units 42000 J/mol}'
+Diffusivity_Cu = '${units ${fparse Do_Cu * exp(-E_D_Cu/ideal_R/temperature)} mm^2/s}'
+Do_W = '${units 4.464 mm^2/s}' # Diffusivity of H in W (mm^2/min)
+E_D_W = '${units 0.13 eV}'
+Diffusivity_W = '${units ${fparse Do_W * exp(-E_D_W/k_B/temperature)} mm^2/s}'
 
 [Mesh]
   type = GeneratedMesh
   dim = 1
   nx = ${nx_num}
-  xmax = '${fparse ${T_PyC} + ${T_SiC} }'
+  xmax = '${fparse ${T_Cu} + ${T_W} }'
   allow_renumbering = false
 []
 
@@ -33,7 +47,7 @@ initial_concentration = '${units 50.7079 mol/m^3}'
   # Diffusivity assign based on different material domains
   [diffusivity_value]
     type = ParsedFunction
-    expression = 'if(x < ${length_PyC}, ${Diffusivity_PyC}, ${Diffusivity_SiC} )'
+    expression = 'if(x < ${length_Cu}, ${Diffusivity_Cu}, ${Diffusivity_W} )'
   []
 []
 
@@ -46,6 +60,20 @@ initial_concentration = '${units 50.7079 mol/m^3}'
   [time]
     type = TimeDerivative
     variable = u
+  []
+[]
+
+[AuxVariables]
+  [T] # Temperature
+    initial_condition = ${temperature}
+  []
+[]
+
+[AuxKernels]
+  [constant_temperature]
+    type = ConstantAux
+    variable = T
+    value = '${temperature}'
   []
 []
 
@@ -80,19 +108,19 @@ initial_concentration = '${units 50.7079 mol/m^3}'
 
 [Postprocessors]
   # Used to obtain varying concentration with time at a
-  # point in SiC layer 'x' um from IPyC/SiC boundary
+  # point in W layer 'x' um from Interface Cu/W boundary
   # x = 8 um for TMAP4 verification case,
   # x = 15.75 um for TMAP7 verification case
-  [concentration_at_x_SiC]
+  [concentration_at_x_W] #_x_SiC
     type = PointValue
     variable = u
-    point = '${fparse ${T_PyC} + ${D_ver}} 0 0'
+    point = '${fparse ${T_Cu} + ${D_ver}} 0 0'
     outputs = 'csv'
   []
-  [concentration_at_x_PyC]
+  [concentration_at_x_Cu] # _x_PyC
     type = PointValue
     variable = u
-    point = '${D_ver_PyC} 0 0'
+    point = '${D_ver_Cu} 0 0'
     outputs = 'csv'
   []
 []
@@ -100,7 +128,7 @@ initial_concentration = '${units 50.7079 mol/m^3}'
 [Executioner]
   type = Transient
   end_time = ${simulation_time}
-  dtmax = 10
+  dtmax = 0.01
   solve_type = NEWTON
   petsc_options_iname = '-pc_type'
   petsc_options_value = 'lu'
@@ -111,10 +139,10 @@ initial_concentration = '${units 50.7079 mol/m^3}'
   abort_on_solve_fail = true
   [TimeStepper]
     type = IterationAdaptiveDT
-    dt = 1e-4
+    dt = '${step}'
     optimal_iterations = 4
-    growth_factor = 1.25
-    cutback_factor = 0.8
+    growth_factor = 1.1
+    cutback_factor = 0.9
   []
 []
 
