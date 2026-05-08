@@ -36,26 +36,26 @@ tmap_conc_tmap7 = tmap_sol_tmap7["concentration_at_x_W"]
 tmap_conc_tmap7_Cu = tmap_sol_tmap7["concentration_at_x_Cu"]
 
 # ax.plot(tmap_time_tmap4, tmap_conc_tmap4, label=r"TMAP8-SiC (TMAP4 case)", c="tab:gray")
-ax.plot(tmap_time_tmap7, tmap_conc_tmap7, label=r"TMAP8-W (TMAP7 case)", c="tab:brown")
+ax.plot(tmap_time_tmap7, tmap_conc_tmap7, label=r"TMAP8-W", c="tab:brown")
 
 # Analytical parameters
-t0 = 0.002
-c0 = 5.0e-08  # concentration at the Cu free surface (moles/mm^3)
-a = 0.05  # thickness of the Cu layer (mm)
-l = 0.025  # thickness of the W layer (mm)
+t0 = 0.0001
+c0 = 0.1  # concentration at the Cu free surface (moles/m^3)
+a = 0.05e-3  # thickness of the Cu layer (m)
+l = 0.025e-3  # thickness of the W layer (m)
 temp = 1500  # K
-Do_Cu = 104.400  # diffusivity in Cu (mm^2/min)
-Do_W = 4.464  # diffusivity in W (mm^2/min)
+Do_Cu = 1.74e-6  # diffusivity in Cu (m^2/s)
+Do_W = 7.44e-8  # diffusivity in W (m^2/s)
 
-D_Cu = Do_Cu * np.exp(-42000 / 8.31453 / temp)  # diffusivity in Cu (mm^2/min)
-D_W = Do_W * np.exp(-0.13 / 8.6173e-5 / temp)  # diffusivity in W (mm^2/min)
+D_Cu = Do_Cu * np.exp(-42000 / 8.31446261815324 / temp)  # diffusivity in Cu (m^2/s)
+D_W = Do_W * np.exp(-0.13 / 8.61733e-5 / temp)  # diffusivity in W (m^2/s)
 k = sqrt(D_Cu / D_W)
 
 # Parameters for TMAP 7 Analytical solution
 # l = 66e-6  # thickness of the SiC layer (m)
 lambdas = get_lambdas_analytical(k, l, a)
 t = np.expand_dims(tmap_time_tmap7, axis=0)
-x = 0.02  # depth into W layer from Cu/W interface (D_ver)
+x = 0.02e-3  # depth into W layer from Cu/W interface (D_ver)
 # where we compare analytical and numerical model concentration predictions (m)
 x2 = x + a
 
@@ -84,25 +84,23 @@ analytical_conc_tmap7 = c0 * (D_Cu * (l + a - x2) / (l * D_Cu + a * D_W) + 2 * s
 idx = np.where(tmap_time_tmap7 >= t0)[0]
 RMSE = np.sqrt(np.mean((tmap_conc_tmap7[idx] - analytical_conc_tmap7[idx]) ** 2))
 err_percent = RMSE * 100 / np.mean(analytical_conc_tmap7[idx])
-ax.text(0.4, 0.7e-9, "RMSPE = %.2f " % err_percent + "% \n(TMAP7)", fontweight="bold")
+ax.text(0.1, 0.07, "RMSPE = %.2f " % err_percent + "%", fontweight="bold")
 
 ax.plot(
     tmap_time_tmap7,
     analytical_conc_tmap7,
-    label=r"Analytical-W (TMAP7 case)",
+    label=r"Analytical-W",
     c="tab:cyan",
     linestyle="--",
     dashes=(5, 5),
 )
 
 
-ax.set_xlabel("Time (min)")
-ax.set_ylabel(r"Concentration (moles/m$^3$)")
+ax.set_xlabel("Time (s)")
+ax.set_ylabel(r"Concentration (moles H/m$^3$)")
 ax.legend(loc="best")
-# ax.set_xlim(0, 50)
-# ax.set_ylim(0, 45)
-ax.set_xlim(0, 1)
-ax.set_ylim(0, 5e-8)
+ax.set_xlim(0, 0.2)
+ax.set_ylim(0, 0.10)
 plt.grid(visible=True, which="major", color="0.65", linestyle="--", alpha=0.3)
 
 ax.minorticks_on()
@@ -121,7 +119,7 @@ ax.plot(tmap_time_tmap7, tmap_conc_tmap7_Cu, label=r"TMAP8-Cu", c="tab:brown")
 # l = 63e-6  # thickness of the SiC layer (m)
 lambdas = get_lambdas_analytical(k, l, a)
 t = np.expand_dims(tmap_time_tmap7, axis=0)
-x = -0.005  # depth into Cu layer from Cu / W interface (mm) (D_ver_Cu - T_Cu)
+x = -0.005e-3  # depth into Cu layer from Cu / W interface (mm) (D_ver_Cu - T_Cu)
 # where we compare analytical and numerical model concentration predictions (mm)
 x1 = x + a  # (D_ver_Cu)
 
@@ -152,22 +150,22 @@ analytical_conc_tmap7 = c0 * (
 idx = np.where(tmap_time_tmap7 >= t0)[0]
 RMSE = np.sqrt(np.mean((tmap_conc_tmap7_Cu[idx] - analytical_conc_tmap7[idx]) ** 2))
 err_percent = RMSE * 100 / np.mean(analytical_conc_tmap7[idx])
-ax.text(0.6, 0.5e-8, "RMSPE = %.2f " % err_percent + "%", fontweight="bold")
+ax.text(0.1, 0.07, "RMSPE = %.2f " % err_percent + "%", fontweight="bold")
 
 ax.plot(
     tmap_time_tmap7,
     analytical_conc_tmap7,
-    label=r"Analytical-PyC",
+    label=r"Analytical-Cu",
     c="tab:cyan",
     linestyle="--",
     dashes=(5, 5),
 )
 
-ax.set_xlabel("Time (min)")
-ax.set_ylabel(r"Concentration (moles/mm$^3$)")
+ax.set_xlabel("Time (s)")
+ax.set_ylabel(r"Concentration (moles H/m$^3$)")
 ax.legend(loc="best")
-ax.set_xlim(0, 1)
-ax.set_ylim(0, 5e-8)
+ax.set_xlim(0, 0.2)
+ax.set_ylim(0, 0.10)
 plt.grid(visible=True, which="major", color="0.65", linestyle="--", alpha=0.3)
 
 ax.minorticks_on()
@@ -179,42 +177,44 @@ fig = plt.figure(figsize=[6.5, 5.5])
 gs = gridspec.GridSpec(1, 1)
 ax = fig.add_subplot(gs[0])
 
-csv_folder = "./Cu_W_Diff_vector_postproc_line_0339.csv"  # 0056.csv"
+csv_folder = "./Cu_W_Diff_vector_postproc_line_0083.csv"  # 0056.csv"
 tmap_sol = pd.read_csv(csv_folder)
 tmap_distance_tmap7 = tmap_sol["x"]
-tmap_distance_tmap7_microns = tmap_distance_tmap7  # * 1e3
+tmap_distance_tmap7_microns = tmap_distance_tmap7 * 1e3
 tmap_conc_tmap7 = tmap_sol["u"]
 ax.plot(
     tmap_distance_tmap7_microns,
     tmap_conc_tmap7,
-    label=r"TMAP8 (TMAP7 case)",
+    label=r"TMAP8",
     c="tab:brown",
 )
 
 # TMAP 7 Analytical solution
-c0 = 5.0e-8  # concentration at the Cu free surface (moles/mm^3)
+c0 = 0.1  # concentration at the Cu free surface (moles/mm^3)
 
 x = tmap_distance_tmap7
-Cu_conc = c0 * (1 + (x / l) * ((a * D_Cu) / (a * D_Cu + l * D_W) - 1))
-W_conc = c0 * (((a + l - x) / l) * (a * D_Cu) / (a * D_Cu + l * D_W))
+# Cu_conc = c0 * (1 + (x / l) * ((a * D_Cu) / (a * D_Cu + l * D_W) - 1))
+# W_conc = c0 * (((a + l - x) / l) * (a * D_Cu) / (a * D_Cu + l * D_W))
+Cu_conc = c0 * (1 - x * D_W / (a * D_W + l * D_Cu))
+W_conc = c0 * D_Cu * (a + l - x) / (a * D_W + l * D_Cu)
+analytical_conc_tmap7 = (x < a) * Cu_conc + (x >= a) * W_conc
 analytical_conc_tmap7 = (x < a) * Cu_conc + (x >= a) * W_conc
 
 RMSE = np.sqrt(np.mean((tmap_conc_tmap7 - analytical_conc_tmap7) ** 2))
 err_percent = RMSE * 100 / np.mean(analytical_conc_tmap7)
-ax.text(0.02, 0.5e-8, "RMSPE = %.2f " % err_percent + "% \n(TMAP7)", fontweight="bold")
-
+ax.text(0.03, 0.02, "RMSPE = %.2f " % err_percent + "%", fontweight="bold")
 
 ax.plot(
     tmap_distance_tmap7_microns,
     analytical_conc_tmap7,
-    label=r"Analytical (TMAP7 case)",
+    label=r"Analytical",
     c="tab:cyan",
     linestyle="--",
     dashes=(5, 5),
 )
 
-ax.set_xlabel("Distance ($\mu$m)")
-ax.set_ylabel(r"Concentration (moles/mm$^3$)")
+ax.set_xlabel(r"Distance (mm)")
+ax.set_ylabel(r"Concentration (moles H/m$^3$)")
 ax.set_xlim(left=0)
 ax.set_ylim(bottom=0)
 ax.legend(loc="best")

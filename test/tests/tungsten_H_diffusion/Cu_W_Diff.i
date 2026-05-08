@@ -3,19 +3,19 @@
 # No Soret effect, trapping, or solubility included.
 
 # Numerical parameters
-nx_num = 5000 # - 1000
-simulation_time = '${units 3 s}' # Actually min # previous 1
-step = '${units 0.0001 s}' # Actually min # previous 0.000001
+nx_num = 6000 # - 1000
+simulation_time = '${units 0.2 s}' # previous 1
+step = '${units 0.00001 s}' # previous 0.000001
 
 # System properties
-T_Cu = '${units 0.05 mm}' # Thickness of Copper substrate. # T_PyC
-T_W = '${units 0.025 mm}' # Thickness of Tungsten film  # SiC
-D_ver = '${units 0.02 mm}' # Distance past T_Cu to calculate theoretical diffusion in tungsten layer # D_ver
-D_ver_Cu = '${units 0.045 mm}' # Distance past 0 to calculate theoretical diffusion on copper layer # D_ver_PyC
+T_Cu = '${units 0.05 mm -> m}' # Thickness of Copper substrate. # T_PyC
+T_W = '${units 0.025 mm -> m}' # Thickness of Tungsten film  # SiC
+D_ver = '${units 0.02 mm -> m}' # Distance past T_Cu to calculate theoretical diffusion in tungsten layer # D_ver
+D_ver_Cu = '${units 0.045 mm -> m}' # Distance past 0 to calculate theoretical diffusion on copper layer # D_ver_PyC
 length_Cu = ${T_Cu} # '${units 1 mm}'
 
 # Initial Conditions
-initial_concentration = '${units 50 mol/m^3 -> mol/mm^3}'
+initial_concentration = '${units 0.1 mol/m^3}'
 temperature = '${units 1500 K}'
 
 # Constants
@@ -23,12 +23,12 @@ k_B = '${units 8.61733e-5 eV/K}'
 ideal_R = '${units 8.31446261815324 J/mol/K}'
 
 # Material Propertoes
-Do_Cu = '${units 104.400 mm^2/s}' # Diffusivity of H in Cu (mm^2/min)
+Do_Cu = '${units 1.74e-6 m^2/s}' # Diffusivity of H in Cu (m^2/s)
 E_D_Cu = '${units 42000 J/mol}'
-Diffusivity_Cu = '${units ${fparse Do_Cu * exp(-E_D_Cu/ideal_R/temperature)} mm^2/s}'
-Do_W = '${units 4.464 mm^2/s}' # Diffusivity of H in W (mm^2/min)
+Diffusivity_Cu = '${units ${fparse Do_Cu * exp(-E_D_Cu/ideal_R/temperature)} m^2/s}'
+Do_W = '${units 7.44e-8 m^2/s}' # Diffusivity of H in W (m^2/s)
 E_D_W = '${units 0.13 eV}'
-Diffusivity_W = '${units ${fparse Do_W * exp(-E_D_W/k_B/temperature)} mm^2/s}'
+Diffusivity_W = '${units ${fparse Do_W * exp(-E_D_W/k_B/temperature)} m^2/s}'
 
 [Mesh]
   type = GeneratedMesh
@@ -128,7 +128,7 @@ Diffusivity_W = '${units ${fparse Do_W * exp(-E_D_W/k_B/temperature)} mm^2/s}'
 [Executioner]
   type = Transient
   end_time = ${simulation_time}
-  dtmax = 0.01
+  dtmax = 0.010
   solve_type = NEWTON
   petsc_options_iname = '-pc_type'
   petsc_options_value = 'lu'
